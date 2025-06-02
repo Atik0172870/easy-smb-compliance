@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,11 +5,54 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Download, Eye, CheckCircle, Clock, AlertTriangle, TrendingUp, BarChart3, Calendar } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export const ReportGenerator = () => {
-  const [selectedReport, setSelectedReport] = useState(null);
+  const { toast } = useToast();
+  const [selectedReport, setSelectedReport] = useState<number | null>(null);
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  const handleGenerateReport = (reportId: number) => {
+    setSelectedReport(reportId);
+    setGenerating(true);
+    setProgress(0);
+    
+    toast({
+      title: "Report generation started",
+      description: "AI is analyzing documents and generating your compliance report..."
+    });
+    
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setGenerating(false);
+          setSelectedReport(null);
+          toast({
+            title: "Report generated successfully",
+            description: "Your compliance report is ready for download!"
+          });
+          return 100;
+        }
+        return prev + 15;
+      });
+    }, 300);
+  };
+
+  const handleViewReport = (reportName: string) => {
+    toast({
+      title: "Opening report",
+      description: `Opening ${reportName} in viewer...`
+    });
+  };
+
+  const handleDownloadReport = (reportName: string) => {
+    toast({
+      title: "Download started",
+      description: `Downloading ${reportName}...`
+    });
+  };
 
   const availableReports = [
     {
@@ -90,22 +132,6 @@ export const ReportGenerator = () => {
     }
   ];
 
-  const handleGenerateReport = (reportId: number) => {
-    setGenerating(true);
-    setProgress(0);
-    
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setGenerating(false);
-          return 100;
-        }
-        return prev + 15;
-      });
-    }, 300);
-  };
-
   return (
     <div className="space-y-6">
       <Tabs defaultValue="generate" className="space-y-6">
@@ -116,7 +142,6 @@ export const ReportGenerator = () => {
         </TabsList>
 
         <TabsContent value="generate" className="space-y-6">
-          {/* Report Generation */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -166,13 +191,17 @@ export const ReportGenerator = () => {
                     <div className="flex space-x-2">
                       <Button 
                         size="sm" 
-                        disabled={report.status !== "ready" || generating}
+                        disabled={report.status !== "ready" || (generating && selectedReport === report.id)}
                         onClick={() => handleGenerateReport(report.id)}
                       >
-                        Generate Report
+                        {generating && selectedReport === report.id ? "Generating..." : "Generate Report"}
                       </Button>
                       {report.lastGenerated && (
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewReport(report.name)}
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
                       )}
@@ -198,7 +227,6 @@ export const ReportGenerator = () => {
         </TabsContent>
 
         <TabsContent value="history" className="space-y-6">
-          {/* Generated Reports History */}
           <Card>
             <CardHeader>
               <CardTitle>Generated Reports</CardTitle>
@@ -243,10 +271,18 @@ export const ReportGenerator = () => {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewReport(report.name)}
+                      >
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleDownloadReport(report.name)}
+                      >
                         <Download className="w-4 h-4" />
                       </Button>
                     </div>
@@ -258,7 +294,6 @@ export const ReportGenerator = () => {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
-          {/* Report Analytics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardContent className="p-6">

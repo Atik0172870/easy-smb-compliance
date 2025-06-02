@@ -1,15 +1,20 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Upload, FileText, CheckCircle, AlertCircle, Eye, Download } from "lucide-react";
+import { FileUploadHandler } from "./FileUploadHandler";
+import { DocumentViewer } from "./DocumentViewer";
+import { useToast } from "@/hooks/use-toast";
 
 export const DocumentUpload = () => {
+  const { toast } = useToast();
   const [dragActive, setDragActive] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<any>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -26,20 +31,52 @@ export const DocumentUpload = () => {
     e.stopPropagation();
     setDragActive(false);
     
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFileUpload(files);
+    }
+  };
+
+  const handleFileUpload = (files: FileList) => {
     // Simulate upload process
     setIsProcessing(true);
     setUploadProgress(0);
     
+    toast({
+      title: "Upload started",
+      description: `Uploading ${files.length} file(s)...`
+    });
+
     const interval = setInterval(() => {
       setUploadProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
           setIsProcessing(false);
+          toast({
+            title: "Upload complete",
+            description: "Files uploaded and processed successfully!"
+          });
           return 100;
         }
         return prev + 10;
       });
     }, 200);
+  };
+
+  const handleBrowseFiles = () => {
+    document.getElementById('file-upload')?.click();
+  };
+
+  const handleViewDocument = (document: any) => {
+    setSelectedDocument(document);
+    setViewerOpen(true);
+  };
+
+  const handleDownloadDocument = (document: any) => {
+    toast({
+      title: "Download started",
+      description: `Downloading ${document.name}...`
+    });
   };
 
   const recentUploads = [
@@ -79,7 +116,6 @@ export const DocumentUpload = () => {
 
   return (
     <div className="space-y-6">
-      {/* Upload Area */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -109,7 +145,7 @@ export const DocumentUpload = () => {
             <p className="text-gray-500 mb-4">
               Supports PDF, DOCX, JPG, PNG files up to 10MB
             </p>
-            <Button variant="outline" className="mb-4">
+            <Button variant="outline" className="mb-4" onClick={handleBrowseFiles}>
               Browse Files
             </Button>
             <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-500">
@@ -119,6 +155,8 @@ export const DocumentUpload = () => {
               <Badge variant="outline">Training Records</Badge>
             </div>
           </div>
+
+          <FileUploadHandler onFileSelect={handleFileUpload} />
 
           {isProcessing && (
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -135,7 +173,6 @@ export const DocumentUpload = () => {
         </CardContent>
       </Card>
 
-      {/* Recent Uploads */}
       <Card>
         <CardHeader>
           <CardTitle>Recent Uploads</CardTitle>
@@ -197,10 +234,10 @@ export const DocumentUpload = () => {
                       Processing
                     </Badge>
                   )}
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => handleViewDocument(upload)}>
                     <Eye className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => handleDownloadDocument(upload)}>
                     <Download className="w-4 h-4" />
                   </Button>
                 </div>
@@ -209,6 +246,12 @@ export const DocumentUpload = () => {
           </div>
         </CardContent>
       </Card>
+
+      <DocumentViewer
+        isOpen={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        document={selectedDocument}
+      />
     </div>
   );
 };

@@ -4,10 +4,19 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle, Clock, TrendingUp, FileText, Users, Shield, Calendar } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export const Dashboard = () => {
+  const { toast } = useToast();
   const complianceHealth = 87;
-  
+
+  const handleViewAllDeadlines = () => {
+    toast({
+      title: "Deadlines view",
+      description: "Opening comprehensive deadlines calendar..."
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Quick Stats */}
@@ -152,7 +161,11 @@ export const Dashboard = () => {
               <p className="text-xs text-gray-500">2 months remaining</p>
             </div>
 
-            <Button className="w-full mt-4" variant="outline">
+            <Button 
+              className="w-full mt-4" 
+              variant="outline"
+              onClick={handleViewAllDeadlines}
+            >
               View All Deadlines
             </Button>
           </CardContent>

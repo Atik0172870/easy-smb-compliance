@@ -10,9 +10,30 @@ import { DocumentUpload } from "@/components/DocumentUpload";
 import { ComplianceTemplates } from "@/components/ComplianceTemplates";
 import { Dashboard } from "@/components/Dashboard";
 import { ReportGenerator } from "@/components/ReportGenerator";
+import { Settings } from "@/components/Settings";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("dashboard");
+
+  const handleSettingsClick = () => {
+    setActiveTab("settings");
+  };
+
+  const handleReviewNotification = (notificationType: string) => {
+    toast({
+      title: "Review started",
+      description: `Opening ${notificationType} for review...`
+    });
+  };
+
+  const handlePrepareNotification = (notificationType: string) => {
+    toast({
+      title: "Preparation started",
+      description: `Preparing ${notificationType}...`
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -34,7 +55,9 @@ const Index = () => {
                 <CheckCircle className="w-3 h-3 mr-1" />
                 Active Plan: Pro
               </Badge>
-              <Button variant="outline" size="sm">Settings</Button>
+              <Button variant="outline" size="sm" onClick={handleSettingsClick}>
+                Settings
+              </Button>
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">JD</span>
               </div>
@@ -46,7 +69,7 @@ const Index = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-white shadow-sm">
+          <TabsList className="grid w-full grid-cols-6 bg-white shadow-sm">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4" />
               <span>Dashboard</span>
@@ -66,6 +89,10 @@ const Index = () => {
             <TabsTrigger value="notifications" className="flex items-center space-x-2">
               <Bell className="w-4 h-4" />
               <span>Alerts</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center space-x-2">
+              <Users className="w-4 h-4" />
+              <span>Settings</span>
             </TabsTrigger>
           </TabsList>
 
@@ -106,7 +133,13 @@ const Index = () => {
                         <p className="text-sm text-red-700">Due: March 1, 2024</p>
                       </div>
                     </div>
-                    <Button size="sm" variant="destructive">Review</Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => handleReviewNotification("OSHA 300A Report")}
+                    >
+                      Review
+                    </Button>
                   </div>
                   
                   <div className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -117,7 +150,13 @@ const Index = () => {
                         <p className="text-sm text-yellow-700">Due in 7 days</p>
                       </div>
                     </div>
-                    <Button size="sm" variant="outline">Prepare</Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handlePrepareNotification("HIPAA Risk Assessment")}
+                    >
+                      Prepare
+                    </Button>
                   </div>
 
                   <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -133,6 +172,10 @@ const Index = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Settings />
           </TabsContent>
         </Tabs>
       </div>
