@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Print, Share2, FileText, BarChart3, AlertTriangle, CheckCircle, Calendar, User } from "lucide-react";
+import { Download, Printer, Share2, FileText, BarChart3, AlertTriangle, CheckCircle, Calendar, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ReportViewerProps {
@@ -111,7 +111,7 @@ export const ReportViewer = ({ isOpen, onClose, report }: ReportViewerProps) => 
                   Word
                 </Button>
                 <Button variant="outline" size="sm" onClick={handlePrint}>
-                  <Print className="w-4 h-4" />
+                  <Printer className="w-4 h-4" />
                 </Button>
                 <Button variant="outline" size="sm" onClick={handleShare}>
                   <Share2 className="w-4 h-4" />
