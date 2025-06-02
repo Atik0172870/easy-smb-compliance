@@ -5,39 +5,67 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { FileText, Search, Building2, Heart, Scale, DollarSign, Plus, Download, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { TemplateBuilder } from "./TemplateBuilder";
 
 export const ComplianceTemplates = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIndustry, setSelectedIndustry] = useState("All Industries");
   const [selectedComplexity, setSelectedComplexity] = useState("All Levels");
+  const [builderOpen, setBuilderOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [builderMode, setBuilderMode] = useState<"create" | "edit" | "use">("create");
 
-  const handleUseTemplate = (templateName: string) => {
-    toast({
-      title: "Template loaded",
-      description: `${templateName} template is now ready for use.`
+  const handleUseTemplate = (template: any) => {
+    setSelectedTemplate({
+      ...template,
+      fields: [
+        { id: 1, type: "text", label: "Company Name", required: true },
+        { id: 2, type: "date", label: "Inspection Date", required: true },
+        { id: 3, type: "select", label: "Industry Type", required: true, options: ["Construction", "Healthcare", "Legal", "Financial"] },
+        { id: 4, type: "textarea", label: "Compliance Notes", required: false },
+        { id: 5, type: "number", label: "Number of Employees", required: true }
+      ]
     });
+    setBuilderMode("use");
+    setBuilderOpen(true);
   };
 
   const handleDownloadTemplate = (templateName: string) => {
+    // Create a mock PDF download
+    const element = document.createElement('a');
+    const file = new Blob([`${templateName} Template\n\nThis is a sample template for ${templateName}.\nDownloaded on: ${new Date().toLocaleDateString()}`], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${templateName.replace(/\s+/g, '_')}_Template.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
     toast({
-      title: "Download started",
-      description: `Downloading ${templateName} template...`
+      title: "Download completed",
+      description: `${templateName} template has been downloaded.`
     });
   };
 
-  const handleEditTemplate = (templateName: string) => {
-    toast({
-      title: "Template editor",
-      description: `Opening ${templateName} in template editor...`
+  const handleEditTemplate = (template: any) => {
+    setSelectedTemplate({
+      ...template,
+      fields: [
+        { id: 1, type: "text", label: "Company Name", required: true },
+        { id: 2, type: "date", label: "Inspection Date", required: true },
+        { id: 3, type: "select", label: "Industry Type", required: true, options: ["Construction", "Healthcare", "Legal", "Financial"] },
+        { id: 4, type: "textarea", label: "Compliance Notes", required: false },
+        { id: 5, type: "number", label: "Number of Employees", required: true }
+      ]
     });
+    setBuilderMode("edit");
+    setBuilderOpen(true);
   };
 
   const handleCreateCustomTemplate = () => {
-    toast({
-      title: "Template builder",
-      description: "Opening custom template builder..."
-    });
+    setSelectedTemplate(null);
+    setBuilderMode("create");
+    setBuilderOpen(true);
   };
 
   const templates = [
@@ -241,7 +269,7 @@ export const ComplianceTemplates = () => {
                   <Button 
                     className="flex-1" 
                     size="sm"
-                    onClick={() => handleUseTemplate(template.name)}
+                    onClick={() => handleUseTemplate(template)}
                   >
                     Use Template
                   </Button>
@@ -255,7 +283,7 @@ export const ComplianceTemplates = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleEditTemplate(template.name)}
+                    onClick={() => handleEditTemplate(template)}
                   >
                     <Edit className="w-4 h-4" />
                   </Button>
@@ -296,6 +324,13 @@ export const ComplianceTemplates = () => {
           </Button>
         </CardContent>
       </Card>
+
+      <TemplateBuilder
+        isOpen={builderOpen}
+        onClose={() => setBuilderOpen(false)}
+        template={selectedTemplate}
+        mode={builderMode}
+      />
     </div>
   );
 };

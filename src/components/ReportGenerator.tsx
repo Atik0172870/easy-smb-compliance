@@ -6,12 +6,15 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Download, Eye, CheckCircle, Clock, AlertTriangle, TrendingUp, BarChart3, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ReportViewer } from "./ReportViewer";
 
 export const ReportGenerator = () => {
   const { toast } = useToast();
   const [selectedReport, setSelectedReport] = useState<number | null>(null);
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [selectedReportData, setSelectedReportData] = useState<any>(null);
 
   const handleGenerateReport = (reportId: number) => {
     setSelectedReport(reportId);
@@ -29,9 +32,33 @@ export const ReportGenerator = () => {
           clearInterval(interval);
           setGenerating(false);
           setSelectedReport(null);
+          
+          // Add the new report to generated reports
+          const newReport = availableReports.find(r => r.id === reportId);
+          if (newReport) {
+            const generatedReport = {
+              id: Date.now(),
+              name: `${newReport.name} - ${new Date().toLocaleDateString()}`,
+              type: newReport.type,
+              generatedDate: new Date().toLocaleDateString(),
+              pages: Math.floor(Math.random() * 20) + 10,
+              status: "final",
+              downloadCount: 0,
+              keyFindings: [
+                "All compliance requirements met",
+                "2 minor recommendations identified",
+                "Documentation is up to date"
+              ],
+              complianceScore: Math.floor(Math.random() * 20) + 80
+            };
+            
+            // In a real app, this would update state or make an API call
+            console.log("Generated report:", generatedReport);
+          }
+          
           toast({
             title: "Report generated successfully",
-            description: "Your compliance report is ready for download!"
+            description: "Your compliance report is ready for download and review!"
           });
           return 100;
         }
@@ -40,17 +67,25 @@ export const ReportGenerator = () => {
     }, 300);
   };
 
-  const handleViewReport = (reportName: string) => {
-    toast({
-      title: "Opening report",
-      description: `Opening ${reportName} in viewer...`
-    });
+  const handleViewReport = (report: any) => {
+    setSelectedReportData(report);
+    setViewerOpen(true);
   };
 
-  const handleDownloadReport = (reportName: string) => {
+  const handleDownloadReport = (reportName: string, format: string = "pdf") => {
+    // Create a mock download
+    const element = document.createElement('a');
+    const content = `${reportName}\n\nCompliance Report\nGenerated: ${new Date().toLocaleDateString()}\n\nThis is a sample report content for demonstration purposes.`;
+    const file = new Blob([content], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${reportName.replace(/\s+/g, '_')}.${format === "pdf" ? "pdf" : "txt"}`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
     toast({
       title: "Download started",
-      description: `Downloading ${reportName}...`
+      description: `Downloading ${reportName} as ${format.toUpperCase()}...`
     });
   };
 
@@ -100,6 +135,12 @@ export const ReportGenerator = () => {
         "Zero workplace accidents recorded",
         "100% safety training completion",
         "3 minor equipment updates recommended"
+      ],
+      complianceScore: 94,
+      recommendations: [
+        "Update safety signage in warehouse area",
+        "Schedule equipment maintenance review",
+        "Implement digital safety checklist system"
       ]
     },
     {
@@ -114,6 +155,12 @@ export const ReportGenerator = () => {
         "All PHI access properly logged",
         "2 minor policy updates needed",
         "Staff training 98% complete"
+      ],
+      complianceScore: 92,
+      recommendations: [
+        "Update privacy policy documentation",
+        "Complete remaining staff training sessions",
+        "Review access control procedures"
       ]
     },
     {
@@ -128,6 +175,12 @@ export const ReportGenerator = () => {
         "All transactions properly documented",
         "Client risk assessments current",
         "1 regulatory update required"
+      ],
+      complianceScore: 88,
+      recommendations: [
+        "Implement new regulatory guidelines",
+        "Update client documentation forms",
+        "Schedule quarterly compliance review"
       ]
     }
   ];
@@ -200,7 +253,20 @@ export const ReportGenerator = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleViewReport(report.name)}
+                          onClick={() => handleViewReport({
+                            id: report.id,
+                            name: report.name,
+                            type: report.type,
+                            generatedDate: report.lastGenerated,
+                            pages: 15,
+                            status: "final",
+                            downloadCount: 5,
+                            keyFindings: [
+                              "All compliance requirements verified",
+                              "Documentation is current",
+                              "No critical issues found"
+                            ]
+                          })}
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -274,7 +340,7 @@ export const ReportGenerator = () => {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleViewReport(report.name)}
+                        onClick={() => handleViewReport(report)}
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -352,6 +418,12 @@ export const ReportGenerator = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ReportViewer
+        isOpen={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        report={selectedReportData}
+      />
     </div>
   );
 };
