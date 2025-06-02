@@ -68,14 +68,32 @@ export const DocumentUpload = () => {
   };
 
   const handleViewDocument = (document: any) => {
+    console.log("Viewing document:", document);
     setSelectedDocument(document);
     setViewerOpen(true);
+    toast({
+      title: "Opening document",
+      description: `Opening ${document.name} for viewing...`
+    });
   };
 
   const handleDownloadDocument = (document: any) => {
+    console.log("Downloading document:", document);
+    
+    // Create a mock download with actual file download simulation
+    const element = document.createElement('a');
+    const content = `Document: ${document.name}\nType: ${document.type}\nUploaded: ${document.uploadDate}\n\nThis is a sample document content for demonstration purposes.\n\nAI Extracted Data:\n${JSON.stringify(document.aiExtracted || {}, null, 2)}`;
+    const file = new Blob([content], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = document.name.replace(/\.[^/.]+$/, "") + "_download.txt";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    URL.revokeObjectURL(element.href);
+    
     toast({
       title: "Download started",
-      description: `Downloading ${document.name}...`
+      description: `Successfully downloading ${document.name}...`
     });
   };
 
@@ -89,7 +107,10 @@ export const DocumentUpload = () => {
       aiExtracted: {
         inspectionDate: "2024-05-28",
         violations: 0,
-        recommendations: 3
+        recommendations: 3,
+        complianceScore: 95,
+        inspector: "John Smith",
+        location: "Main Facility"
       }
     },
     {
@@ -98,7 +119,11 @@ export const DocumentUpload = () => {
       type: "Training Documentation",
       uploadDate: "2024-06-01 2:15 PM",
       status: "processing",
-      aiExtracted: null
+      aiExtracted: {
+        trainingType: "Safety Training",
+        completionRate: "98%",
+        nextDue: "2024-12-01"
+      }
     },
     {
       id: 3,
@@ -109,7 +134,9 @@ export const DocumentUpload = () => {
       aiExtracted: {
         assessmentDate: "2024-05-30",
         riskLevel: "Low",
-        actions: 2
+        actions: 2,
+        assessor: "Jane Doe",
+        nextReview: "2024-11-30"
       }
     }
   ];
@@ -215,6 +242,16 @@ export const DocumentUpload = () => {
                             </Badge>
                             <Badge variant="secondary" className="text-xs">
                               {upload.aiExtracted.actions} Action Items
+                            </Badge>
+                          </>
+                        )}
+                        {upload.type === "Training Documentation" && (
+                          <>
+                            <Badge variant="secondary" className="text-xs">
+                              Type: {upload.aiExtracted.trainingType}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                              {upload.aiExtracted.completionRate} Complete
                             </Badge>
                           </>
                         )}

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,114 +16,7 @@ export const ReportGenerator = () => {
   const [progress, setProgress] = useState(0);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedReportData, setSelectedReportData] = useState<any>(null);
-
-  const handleGenerateReport = (reportId: number) => {
-    setSelectedReport(reportId);
-    setGenerating(true);
-    setProgress(0);
-    
-    toast({
-      title: "Report generation started",
-      description: "AI is analyzing documents and generating your compliance report..."
-    });
-    
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setGenerating(false);
-          setSelectedReport(null);
-          
-          // Add the new report to generated reports
-          const newReport = availableReports.find(r => r.id === reportId);
-          if (newReport) {
-            const generatedReport = {
-              id: Date.now(),
-              name: `${newReport.name} - ${new Date().toLocaleDateString()}`,
-              type: newReport.type,
-              generatedDate: new Date().toLocaleDateString(),
-              pages: Math.floor(Math.random() * 20) + 10,
-              status: "final",
-              downloadCount: 0,
-              keyFindings: [
-                "All compliance requirements met",
-                "2 minor recommendations identified",
-                "Documentation is up to date"
-              ],
-              complianceScore: Math.floor(Math.random() * 20) + 80
-            };
-            
-            // In a real app, this would update state or make an API call
-            console.log("Generated report:", generatedReport);
-          }
-          
-          toast({
-            title: "Report generated successfully",
-            description: "Your compliance report is ready for download and review!"
-          });
-          return 100;
-        }
-        return prev + 15;
-      });
-    }, 300);
-  };
-
-  const handleViewReport = (report: any) => {
-    setSelectedReportData(report);
-    setViewerOpen(true);
-  };
-
-  const handleDownloadReport = (reportName: string, format: string = "pdf") => {
-    // Create a mock download
-    const element = document.createElement('a');
-    const content = `${reportName}\n\nCompliance Report\nGenerated: ${new Date().toLocaleDateString()}\n\nThis is a sample report content for demonstration purposes.`;
-    const file = new Blob([content], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = `${reportName.replace(/\s+/g, '_')}.${format === "pdf" ? "pdf" : "txt"}`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-    
-    toast({
-      title: "Download started",
-      description: `Downloading ${reportName} as ${format.toUpperCase()}...`
-    });
-  };
-
-  const availableReports = [
-    {
-      id: 1,
-      name: "OSHA 300A Annual Summary",
-      description: "Workplace injury and illness summary report",
-      type: "Safety Compliance",
-      dataSource: "Safety inspection documents, incident reports",
-      lastGenerated: "2024-05-28",
-      status: "ready",
-      confidence: 95
-    },
-    {
-      id: 2,
-      name: "HIPAA Risk Assessment Report",
-      description: "Privacy and security risk evaluation",
-      type: "Privacy Compliance",
-      dataSource: "Risk assessment forms, audit documentation",
-      lastGenerated: "2024-05-25",
-      status: "ready",
-      confidence: 88
-    },
-    {
-      id: 3,
-      name: "Environmental Impact Assessment",
-      description: "Environmental compliance and impact analysis",
-      type: "Environmental",
-      dataSource: "Environmental monitoring data, permits",
-      lastGenerated: null,
-      status: "pending",
-      confidence: 0
-    }
-  ];
-
-  const generatedReports = [
+  const [generatedReports, setGeneratedReports] = useState([
     {
       id: 1,
       name: "Q1 2024 Safety Compliance Report",
@@ -182,6 +76,139 @@ export const ReportGenerator = () => {
         "Update client documentation forms",
         "Schedule quarterly compliance review"
       ]
+    }
+  ]);
+
+  const handleGenerateReport = (reportId: number) => {
+    console.log("Generating report with ID:", reportId);
+    setSelectedReport(reportId);
+    setGenerating(true);
+    setProgress(0);
+    
+    toast({
+      title: "Report generation started",
+      description: "AI is analyzing documents and generating your compliance report..."
+    });
+    
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setGenerating(false);
+          setSelectedReport(null);
+          
+          // Add the new report to generated reports
+          const sourceReport = availableReports.find(r => r.id === reportId);
+          if (sourceReport) {
+            const newReport = {
+              id: Date.now(),
+              name: `${sourceReport.name} - ${new Date().toLocaleDateString()}`,
+              type: sourceReport.type,
+              generatedDate: new Date().toLocaleDateString(),
+              pages: Math.floor(Math.random() * 20) + 10,
+              status: "final",
+              downloadCount: 0,
+              keyFindings: [
+                "All compliance requirements thoroughly reviewed",
+                "Document analysis completed successfully",
+                "Recommendations identified for improvement",
+                "Full regulatory compliance verified"
+              ],
+              complianceScore: Math.floor(Math.random() * 20) + 80,
+              recommendations: [
+                "Implement quarterly compliance reviews",
+                "Update documentation processes",
+                "Schedule staff training sessions",
+                "Review current policy effectiveness"
+              ]
+            };
+            
+            setGeneratedReports(prev => [newReport, ...prev]);
+            console.log("Generated new report:", newReport);
+          }
+          
+          toast({
+            title: "Report generated successfully",
+            description: "Your compliance report is ready for download and review!"
+          });
+          return 100;
+        }
+        return prev + 8;
+      });
+    }, 250);
+  };
+
+  const handleViewReport = (report: any) => {
+    console.log("Viewing report:", report);
+    setSelectedReportData(report);
+    setViewerOpen(true);
+    toast({
+      title: "Opening report",
+      description: `Loading ${report.name} for detailed view...`
+    });
+  };
+
+  const handleDownloadReport = (reportName: string, format: string = "pdf") => {
+    console.log("Downloading report:", reportName, "as", format);
+    
+    // Create a mock download with actual file content
+    const element = document.createElement('a');
+    const content = `${reportName}\n\nCompliance Report\nGenerated: ${new Date().toLocaleDateString()}\n\n===== EXECUTIVE SUMMARY =====\n\nThis compliance report provides a comprehensive analysis of organizational compliance status.\n\n===== KEY FINDINGS =====\n\n• All regulatory requirements have been reviewed\n• Documentation processes are current\n• Staff training compliance verified\n• Risk assessments completed\n\n===== RECOMMENDATIONS =====\n\n• Continue quarterly compliance reviews\n• Update policy documentation\n• Schedule additional training sessions\n• Implement continuous monitoring\n\n===== CONCLUSION =====\n\nOverall compliance status is satisfactory with minor improvements identified.\n\nThis is a sample report content for demonstration purposes.\nIn a production environment, this would contain the actual report data.`;
+    
+    const file = new Blob([content], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${reportName.replace(/\s+/g, '_')}.${format === "pdf" ? "txt" : "txt"}`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    URL.revokeObjectURL(element.href);
+    
+    toast({
+      title: "Download complete",
+      description: `${reportName} has been downloaded as ${format.toUpperCase()}.`
+    });
+  };
+
+  const availableReports = [
+    {
+      id: 1,
+      name: "OSHA 300A Annual Summary",
+      description: "Workplace injury and illness summary report",
+      type: "Safety Compliance",
+      dataSource: "Safety inspection documents, incident reports",
+      lastGenerated: "2024-05-28",
+      status: "ready",
+      confidence: 95
+    },
+    {
+      id: 2,
+      name: "HIPAA Risk Assessment Report",
+      description: "Privacy and security risk evaluation",
+      type: "Privacy Compliance",
+      dataSource: "Risk assessment forms, audit documentation",
+      lastGenerated: "2024-05-25",
+      status: "ready",
+      confidence: 88
+    },
+    {
+      id: 3,
+      name: "Environmental Impact Assessment",
+      description: "Environmental compliance and impact analysis",
+      type: "Environmental",
+      dataSource: "Environmental monitoring data, permits",
+      lastGenerated: null,
+      status: "pending",
+      confidence: 0
+    },
+    {
+      id: 4,
+      name: "SOX Compliance Audit",
+      description: "Sarbanes-Oxley financial compliance review",
+      type: "Financial",
+      dataSource: "Financial records, audit trails",
+      lastGenerated: "2024-05-20",
+      status: "ready",
+      confidence: 92
     }
   ];
 
@@ -263,8 +290,16 @@ export const ReportGenerator = () => {
                             downloadCount: 5,
                             keyFindings: [
                               "All compliance requirements verified",
-                              "Documentation is current",
-                              "No critical issues found"
+                              "Documentation is current and complete",
+                              "No critical issues identified",
+                              "Minor improvements recommended"
+                            ],
+                            complianceScore: report.confidence,
+                            recommendations: [
+                              "Schedule regular compliance reviews",
+                              "Update documentation procedures",
+                              "Implement monitoring systems",
+                              "Provide staff training updates"
                             ]
                           })}
                         >
@@ -301,7 +336,7 @@ export const ReportGenerator = () => {
             <CardContent>
               <div className="space-y-4">
                 {generatedReports.map((report) => (
-                  <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3">
                         <h4 className="font-medium text-gray-900">{report.name}</h4>
@@ -309,6 +344,9 @@ export const ReportGenerator = () => {
                           report.status === "final" ? "border-green-200 text-green-800" : "border-yellow-200 text-yellow-800"
                         }>
                           {report.status}
+                        </Badge>
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                          Score: {report.complianceScore}%
                         </Badge>
                       </div>
                       <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
@@ -366,11 +404,11 @@ export const ReportGenerator = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Reports Generated</p>
-                    <p className="text-3xl font-bold text-gray-900">47</p>
+                    <p className="text-3xl font-bold text-gray-900">{generatedReports.length}</p>
                   </div>
                   <BarChart3 className="w-8 h-8 text-blue-600" />
                 </div>
-                <p className="text-xs text-gray-500 mt-2">+12 this month</p>
+                <p className="text-xs text-gray-500 mt-2">+{Math.floor(generatedReports.length / 4)} this month</p>
               </CardContent>
             </Card>
 
@@ -391,8 +429,10 @@ export const ReportGenerator = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Compliance Score</p>
-                    <p className="text-3xl font-bold text-gray-900">94%</p>
+                    <p className="text-sm font-medium text-gray-600">Avg. Compliance Score</p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {Math.round(generatedReports.reduce((acc, report) => acc + report.complianceScore, 0) / generatedReports.length)}%
+                    </p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-orange-600" />
                 </div>
