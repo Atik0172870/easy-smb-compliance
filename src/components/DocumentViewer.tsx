@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -28,15 +27,15 @@ export const DocumentViewer = ({ isOpen, onClose, document }: DocumentViewerProp
   const handleDownload = () => {
     console.log("Downloading document:", document.name);
     
-    // Create actual download
-    const element = document.createElement('a');
+    // Create actual download using global document object
+    const element = globalThis.document.createElement('a');
     const content = `Document: ${document.name}\nType: ${document.type}\nUploaded: ${document.uploadDate}\nStatus: ${document.status}\n\nAI Extracted Information:\n${JSON.stringify(document.aiExtracted || {}, null, 2)}\n\nThis is the full document content for ${document.name}. In a real application, this would be the actual document content.`;
     const file = new Blob([content], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
     element.download = document.name.replace(/\.[^/.]+$/, "") + "_full.txt";
-    document.body.appendChild(element);
+    globalThis.document.body.appendChild(element);
     element.click();
-    document.body.removeChild(element);
+    globalThis.document.body.removeChild(element);
     URL.revokeObjectURL(element.href);
     
     toast({
